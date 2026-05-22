@@ -1,0 +1,382 @@
+#compdef claude
+#
+# Maintained by hand. To check for new/removed options after a Claude Code
+# update, run the companion script:
+#
+#     zsh ~/.claude/zsh/_claude_diff.sh
+#
+# It diffs the current `claude --help` against a saved snapshot and shows
+# what changed, so you know exactly what to add or remove below.
+
+# ---- top-level commands ------------------------------------------------
+
+_claude_commands() {
+  local -a cmds
+  cmds=(
+    'agents:Manage background agents'
+    'auth:Manage authentication'
+    'auto-mode:Inspect auto mode classifier configuration'
+    'doctor:Check the health of Claude Code auto-updater'
+    'install:Install Claude Code native build'
+    'mcp:Configure and manage MCP servers'
+    'plugin:Manage Claude Code plugins'
+    'plugins:Manage Claude Code plugins'
+    'project:Manage Claude Code project state'
+    'setup-token:Set up a long-lived authentication token'
+    'ultrareview:Run cloud-hosted multi-agent code review'
+    'update:Check for updates and install'
+    'upgrade:Check for updates and install'
+  )
+  _describe -t commands 'claude command' cmds
+}
+
+# ---- helpers -----------------------------------------------------------
+
+# comma-separated list of known tool names (for --allowedTools / --disallowedTools)
+_claude_tools() {
+  local -a tools
+  tools=(
+    'Bash' 'Edit' 'Read' 'Write' 'Agent' 'Task' 'TaskCreate' 'TaskUpdate'
+    'TaskGet' 'TaskList' 'TaskOutput' 'TaskStop' 'AskUserQuestion' 'WebFetch'
+    'WebSearch' 'Skill' 'EnterPlanMode' 'ExitPlanMode' 'LSP' 'NotebookEdit'
+    'Monitor' 'CronCreate' 'CronDelete' 'CronList' 'PushNotification'
+    'ScheduleWakeup' 'EnterWorktree' 'ExitWorktree'
+  )
+  compadd "$@" -a tools
+}
+
+_claude_models() {
+  local -a models
+  models=('sonnet' 'opus' 'haiku')
+  compadd "$@" -a models
+}
+
+_claude_effort_levels() {
+  local -a levels
+  levels=('low' 'medium' 'high' 'xhigh' 'max')
+  compadd "$@" -a levels
+}
+
+_claude_permission_modes() {
+  local -a modes
+  modes=(
+    'default' 'acceptEdits' 'auto' 'bypassPermissions' 'dontAsk' 'plan'
+  )
+  compadd "$@" -a modes
+}
+
+_claude_output_formats() {
+  local -a fmts
+  fmts=('text' 'json' 'stream-json')
+  compadd "$@" -a fmts
+}
+
+_claude_input_formats() {
+  local -a fmts
+  fmts=('text' 'stream-json')
+  compadd "$@" -a fmts
+}
+
+_claude_setting_sources() {
+  local -a srcs
+  srcs=('user' 'project' 'local')
+  compadd "$@" -a srcs
+}
+
+# ---- shared main-session options (used by `claude` and `claude agents`) --
+
+_claude_shared_options() {
+  local -a opts
+  opts=(
+    '--add-dir[Additional directories to allow tool access to]:directory:_files -/'
+    '--allow-dangerously-skip-permissions[Enable bypassing all permission checks as an option]'
+    '--dangerously-skip-permissions[Bypass all permission checks]'
+    '--effort[Effort level for the session]:level:_claude_effort_levels'
+    '--mcp-config[Load MCP servers from JSON files or strings]:config file:_files'
+    '--model[Model for the session]:model:_claude_models'
+    '--permission-mode[Permission mode for the session]:mode:_claude_permission_modes'
+    '--plugin-dir[Load a plugin from a directory]:plugin dir:_files -/'
+    '--setting-sources[Comma-separated list of setting sources]:sources:_claude_setting_sources'
+    '--settings[Path to settings JSON file or JSON string]:settings file:_files'
+    '--strict-mcp-config[Only use MCP servers from --mcp-config]'
+  )
+  _describe -t options 'shared option' opts
+}
+
+# ---- subcommand handlers ------------------------------------------------
+
+_claude_agents() {
+  local -a opts
+  opts=(
+    '--add-dir[Additional directory to allow tool access to in dispatched sessions]:directory:_files -/'
+    '--allow-dangerously-skip-permissions[Make bypass-permissions mode available to dispatched sessions]'
+    '--cwd[Show only background sessions started under path]:directory:_files -/'
+    '--dangerously-skip-permissions[Alias for --permission-mode bypassPermissions]'
+    '--effort[Default effort level for dispatched sessions]:level:_claude_effort_levels'
+    '--json[Print live sessions as a JSON array]'
+    '--mcp-config[MCP server configuration for dispatched sessions]:config file:_files'
+    '--model[Default model for dispatched sessions]:model:_claude_models'
+    '--permission-mode[Default permission mode for dispatched sessions]:mode:_claude_permission_modes'
+    '--plugin-dir[Load plugins from directory]:plugin dir:_files -/'
+    '--setting-sources[Comma-separated list of setting sources]:sources:_claude_setting_sources'
+    '--settings[Settings file or JSON string]:settings file:_files'
+    '--strict-mcp-config[Only use MCP servers from --mcp-config in dispatched sessions]'
+  )
+  _arguments -s $opts
+}
+
+_claude_auth() {
+  local -a auth_cmds
+  auth_cmds=(
+    'login:Sign in to your Anthropic account'
+    'logout:Log out from your Anthropic account'
+    'status:Show authentication status'
+    'help:Display help for command'
+  )
+  _arguments -s \
+    ': :_describe "auth command" auth_cmds' \
+    '*:: :->subargs'
+
+  case $state in
+    subargs)
+      case $words[1] in
+        help) _describe 'help target' '(login logout status help)' ;;
+      esac
+      ;;
+  esac
+}
+
+_claude_auto_mode() {
+  local -a sub
+  sub=(
+    'config:Print effective auto mode config as JSON'
+    'critique:Get AI feedback on custom auto mode rules'
+    'defaults:Print default auto mode rules as JSON'
+    'help:Display help for command'
+  )
+  _arguments -s \
+    ': :_describe "auto-mode command" sub' \
+    '*:: :->subargs'
+
+  case $state in
+    subargs)
+      case $words[1] in
+        help) _describe 'help target' '(config critique defaults help)' ;;
+      esac
+      ;;
+  esac
+}
+
+_claude_doctor() {
+  _arguments -s
+}
+
+_claude_install() {
+  _arguments -s \
+    '--force[Force installation even if already installed]' \
+    '1:target:(stable latest)'
+}
+
+_claude_mcp() {
+  local -a mcp_cmds
+  mcp_cmds=(
+    'add:Add an MCP server'
+    'add-from-claude-desktop:Import MCP servers from Claude Desktop'
+    'add-json:Add an MCP server with a JSON string'
+    'get:Get details about an MCP server'
+    'help:Display help for command'
+    'list:List configured MCP servers'
+    'remove:Remove an MCP server'
+    'reset-project-choices:Reset project-scoped MCP server choices'
+    'serve:Start the Claude Code MCP server'
+  )
+  _arguments -s \
+    ': :_describe "mcp command" mcp_cmds' \
+    '*:: :->subargs'
+
+  case $state in
+    subargs)
+      case $words[1] in
+        add)
+          _arguments -s \
+            '--transport[Transport type]:transport:(http stdio)' \
+            '--header[HTTP header]:header:' \
+            '-e[Environment variable]:env var:' \
+            '1:name:' \
+            '2:command or URL:' \
+            '*:args:'
+          ;;
+        add-from-claude-desktop) _arguments -s ;;
+        add-json) _arguments -s '1:name:' '2:json:' ;;
+        get) _arguments -s '1:name:' ;;
+        remove) _arguments -s '1:name:' ;;
+        serve) _arguments -s ;;
+        help) _describe 'help target' mcp_cmds ;;
+      esac
+      ;;
+  esac
+}
+
+_claude_plugin() {
+  local -a plug_cmds
+  plug_cmds=(
+    'details:Show a plugin'\''s component inventory and projected token cost'
+    'disable:Disable an enabled plugin'
+    'enable:Enable a disabled plugin'
+    'help:Display help for command'
+    'install:Install a plugin from available marketplaces'
+    'i:Install a plugin from available marketplaces'
+    'list:List installed plugins'
+    'marketplace:Manage Claude Code marketplaces'
+    'prune:Remove auto-installed dependencies that are no longer needed'
+    'autoremove:Remove auto-installed dependencies that are no longer needed'
+    'tag:Create a git tag for a plugin release'
+    'uninstall:Uninstall an installed plugin'
+    'remove:Uninstall an installed plugin'
+    'update:Update a plugin to the latest version'
+    'validate:Validate a plugin or marketplace manifest'
+  )
+  _arguments -s \
+    ': :_describe "plugin command" plug_cmds' \
+    '*:: :->subargs'
+
+  case $state in
+    subargs)
+      case $words[1] in
+        details|enable|install|i|uninstall|remove|update)
+          _arguments -s '1:plugin name:' ;;
+        disable) _arguments -s '1:plugin name:' ;;
+        validate|tag) _arguments -s '1:path:_files' ;;
+        help) _describe 'help target' plug_cmds ;;
+      esac
+      ;;
+  esac
+}
+
+_claude_project() {
+  local -a proj_cmds
+  proj_cmds=(
+    'help:Display help for command'
+    'purge:Delete all Claude Code state for a project'
+  )
+  _arguments -s \
+    ': :_describe "project command" proj_cmds' \
+    '*:: :->subargs'
+
+  case $state in
+    subargs)
+      case $words[1] in
+        purge) _arguments -s '1:path:_files -/' ;;
+        help) _describe 'help target' proj_cmds ;;
+      esac
+      ;;
+  esac
+}
+
+_claude_setup_token() {
+  _arguments -s
+}
+
+_claude_ultrareview() {
+  _arguments -s \
+    '--json[Print raw bugs.json payload]' \
+    '--timeout[Maximum minutes to wait]:minutes:(10 20 30 60)' \
+    '1:target:'
+}
+
+_claude_update() {
+  _arguments -s
+}
+
+# ---- top-level ----------------------------------------------------------
+
+_claude() {
+  local curcontext="$curcontext" state line
+  typeset -A opt_args
+
+  local -a opts
+  opts=(
+    '(-h --help)'{-h,--help}'[Display help]'
+    '(-p --print)'{-p,--print}'[Print response and exit (non-interactive)]'
+    '(-c --continue)'{-c,--continue}'[Continue the most recent conversation]'
+    '(-r --resume)'{-r,--resume}'[Resume a conversation]:session ID or search term:'
+    '(-v --version)'{-v,--version}'[Output the version number]'
+    '(-d --debug)'{-d,--debug}'[Enable debug mode]:debug filter:'
+    '(-n --name)'{-n,--name}'[Set display name for this session]:name:'
+    '(-w --worktree)'{-w,--worktree}'[Create a git worktree for this session]:worktree name:'
+    '--add-dir[Additional directories to allow tool access]:directory:_files -/'
+    '--agent[Agent for the current session]:agent:'
+    '--agents[JSON object defining custom agents]:json:'
+    '--allow-dangerously-skip-permissions[Enable bypassing all permission checks]'
+    '--allowedTools[Tool names to allow]:tools:_claude_tools'
+    '--allowed-tools[Tool names to allow]:tools:_claude_tools'
+    '--append-system-prompt[Append a system prompt]:prompt:'
+    '--bare[Minimal mode]'
+    '--betas[Beta headers to include in API requests]:betas:'
+    '--brief[Enable SendUserMessage tool]'
+    '--chrome[Enable Chrome integration]'
+    '--dangerously-skip-permissions[Bypass all permission checks]'
+    '--debug-file[Write debug logs to a file]:log file:_files'
+    '--disable-slash-commands[Disable all skills]'
+    '--disallowedTools[Tool names to deny]:tools:_claude_tools'
+    '--disallowed-tools[Tool names to deny]:tools:_claude_tools'
+    '--effort[Effort level]:level:_claude_effort_levels'
+    '--exclude-dynamic-system-prompt-sections[Move per-machine sections to first user message]'
+    '--fallback-model[Enable automatic fallback when model is overloaded]:model:'
+    '--file[File resources to download at startup]:file spec:'
+    '--fork-session[Create a new session ID when resuming]'
+    '--from-pr[Resume a session linked to a PR]:PR number or URL:'
+    '--ide[Automatically connect to IDE on startup]'
+    '--include-hook-events[Include hook lifecycle events in output stream]'
+    '--include-partial-messages[Include partial message chunks as they arrive]'
+    '--input-format[Input format]:format:_claude_input_formats'
+    '--json-schema[JSON Schema for structured output]:schema:'
+    '--max-budget-usd[Maximum dollar amount to spend]:amount:'
+    '--mcp-config[Load MCP servers from files or JSON strings]:config:_files'
+    '--mcp-debug[DEPRECATED. Use --debug instead]'
+    '--model[Model for the session]:model:_claude_models'
+    '--no-chrome[Disable Chrome integration]'
+    '--no-session-persistence[Disable session persistence]'
+    '--output-format[Output format]:format:_claude_output_formats'
+    '--permission-mode[Permission mode]:mode:_claude_permission_modes'
+    '--plugin-dir[Load a plugin from a directory]:plugin dir:_files -/'
+    '--plugin-url[Fetch a plugin .zip from a URL]:url:'
+    '--remote-control[Start with Remote Control enabled]:name:'
+    '--remote-control-session-name-prefix[Prefix for auto-generated session names]:prefix:'
+    '--replay-user-messages[Re-emit user messages from stdin back on stdout]'
+    '--session-id[Specific session ID]:uuid:'
+    '--setting-sources[Comma-separated list of setting sources]:sources:_claude_setting_sources'
+    '--settings[Path to settings JSON file or a JSON string]:settings:_files'
+    '--strict-mcp-config[Only use MCP servers from --mcp-config]'
+    '--system-prompt[System prompt for the session]:prompt:'
+    '--tmux[Create a tmux session for the worktree]'
+    '--tools[Specify available tools]:tools:'
+    '--verbose[Override verbose mode setting]'
+  )
+
+  _arguments -s -S : \
+    $opts \
+    ': :_claude_commands' \
+    '*:: :->subcmd'
+
+  case $state in
+    subcmd)
+      local cmd=$words[1]
+      case $cmd in
+        agents)        _claude_agents ;;
+        auth)          _claude_auth ;;
+        auto-mode)     _claude_auto_mode ;;
+        doctor)        _claude_doctor ;;
+        install)       _claude_install ;;
+        mcp)           _claude_mcp ;;
+        plugin|plugins) _claude_plugin ;;
+        project)       _claude_project ;;
+        setup-token)   _claude_setup_token ;;
+        ultrareview)   _claude_ultrareview ;;
+        update|upgrade) _claude_update ;;
+      esac
+      ;;
+  esac
+}
+
+_claude "$@"
