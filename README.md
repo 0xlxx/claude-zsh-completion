@@ -5,11 +5,7 @@ Zsh tab completion for the [Claude Code](https://claude.ai/code) CLI.
 ## Install
 
 ```zsh
-# Clone anywhere
-git clone https://github.com/0xlxx/claude-code-zsh-completion.git ~/.claude/zsh
-
-# Add to ~/.zshrc (before compinit)
-fpath=(~/.claude/zsh $fpath)
+curl -fsSL https://raw.githubusercontent.com/0xlxx/claude-code-zsh-completion/main/install.zsh | zsh
 ```
 
 Or with oh-my-zsh:
@@ -22,6 +18,8 @@ git clone https://github.com/0xlxx/claude-code-zsh-completion \
 plugins=(... claude-code-zsh-completion)
 ```
 
+The install script is also the updater — re-run it anytime to pull the latest completion and diff CLI changes.
+
 ## Usage
 
 Type `claude ` and press tab. Completes:
@@ -33,13 +31,11 @@ Type `claude ` and press tab. Completes:
 
 ## Keeping up with Claude Code updates
 
-Claude Code's CLI options change across versions. Check what's new after an upgrade:
+Re-run the install script — it pulls the latest completion and diffs CLI changes:
 
 ```zsh
-zsh /path/to/_claude_diff.sh
+zsh ~/.claude/zsh/install.zsh
 ```
-
-This diffs `claude --help` against a saved snapshot and shows added, removed, or changed options. Update `_claude` accordingly.
 
 ## Why
 
