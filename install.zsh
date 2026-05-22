@@ -1,11 +1,11 @@
 #!/usr/bin/env zsh
 #
 # Install or update claude-code-zsh-completion:
-#   curl -fsSL https://raw.githubusercontent.com/0xlxx/claude-code-zsh-completion/main/install.zsh | zsh
+#   curl -fsSL https://raw.githubusercontent.com/0xlxx/claude-zsh-completion/main/install.zsh | zsh
 #
 set -euo pipefail
 
-REPO="https://github.com/0xlxx/claude-code-zsh-completion.git"
+REPO="https://github.com/0xlxx/claude-zsh-completion.git"
 INSTALL_DIR="${HOME}/.claude/zsh"
 
 if [[ -d "${INSTALL_DIR}/.git" ]]; then

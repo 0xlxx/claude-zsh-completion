@@ -1,17 +1,17 @@
-# claude-code-zsh-completion
+# claude-zsh-completion
 
 Zsh tab completion for the [Claude Code](https://claude.ai/code) CLI.
 
 ## Install
 
 ```zsh
-curl -fsSL https://raw.githubusercontent.com/0xlxx/claude-code-zsh-completion/main/install.zsh | zsh
+curl -fsSL https://raw.githubusercontent.com/0xlxx/claude-zsh-completion/main/install.zsh | zsh
 ```
 
 Or with oh-my-zsh:
 
 ```zsh
-git clone https://github.com/0xlxx/claude-code-zsh-completion \
+git clone https://github.com/0xlxx/claude-zsh-completion \
   ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/claude-code-zsh-completion
 
 # In .zshrc:
